@@ -1,0 +1,27 @@
+{
+  "name": "persistant-class",
+  "version": "1.0.0",
+  "description": "Persistent datastructures. Loosely based on the ES2015 class specification.",
+  "main": "dist/main.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "assign": "^0.1.7"
+  },
+  "devDependencies": {
+    "nodeunit": "^0.9.1",
+    "pragmatist": "^3.0.16"
+  },
+  "scripts": {
+    "build": "pragmatist build",
+    "test": "node --harmony_destructuring --es_staging node_modules/nodeunit/bin/nodeunit"
+  },
+  "keywords": [
+    "immutable",
+    "persistent",
+    "constructor"
+  ],
+  "author": "Boris Marinov",
+  "license": "ISC"
+}
