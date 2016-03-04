@@ -2,8 +2,7 @@
 Persistent datastructures. Loosely based on the ES2015 class specification.
 
 ## Using the library
-
-
+See [the tests](/test/test.js).
 
 ## Example
     const persistentClass = require('persistent-class')
