@@ -1,6 +1,6 @@
 {
   "name": "persistant-class",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Persistent datastructures. Loosely based on the ES2015 class specification.",
   "main": "dist/main.js",
   "directories": {
