@@ -1,4 +1,6 @@
-"use strict";
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 Object.assign = Object.assign || require('assign');
 
@@ -13,16 +15,14 @@ var createConstructor = function createConstructor(spec) {
       var method = obj[key];
       //From it, construct the real method
       proto[key] = function () {
-        var propsLength = Object.keys(this).length;
-        //Exec the method
-
         for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
           args[_key] = arguments[_key];
         }
 
+        //Exec the method
         var result = method.apply(this, args);
         //If the returned object contains all keys that the original object, wrap it and return it
-        if (propsLength === 1 || Object.keys(result).length === propsLength) {
+        if (_typeof(this) === 'object' && Object.keys(result).length === Object.keys(this).length) {
           return baseConstructor(result);
         } else {
           //else merge the result with the original object

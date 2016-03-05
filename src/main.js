@@ -11,11 +11,10 @@ const createConstructor = (spec) => {
       const method = obj[key]
       //From it, construct the real method
       proto[key] = function (...args) {
-        const propsLength = Object.keys(this).length
         //Exec the method
         const result = method.apply(this, args)
         //If the returned object contains all keys that the original object, wrap it and return it
-        if (propsLength === 1 || Object.keys(result).length === propsLength) {
+        if (typeof this === 'object' && Object.keys(result).length === Object.keys(this).length ) {
           return baseConstructor(result)
         } else {
           //else merge the result with the original object
