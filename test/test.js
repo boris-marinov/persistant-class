@@ -1,4 +1,4 @@
-const persistentClass = require('../src/main')
+const persistentClass = require('../dist/main')
 
 const Num = persistentClass({
   constructor(i) { return {i:i}},
@@ -13,6 +13,7 @@ const Tuple = persistentClass({
     return {cdr:val}
   }
 })
+
 
 exports.constructor = (test) => {
 
@@ -51,6 +52,10 @@ exports.extendConstructor = (test) => {
 
   test.done()
 }
+exports.defaultConstructor = (test) => {
+  test.equal(Tuple({car:'foo', cdr:'bar'}).setCar(1).car, 1)
+  test.done()
+}
 
 exports.fluent = (test) => {
 
@@ -73,5 +78,15 @@ exports.persistency  = (test) => {
 exports.deltas = (test) => {
   const t = Tuple({car:"foo", cdr:"bar"})
   test.deepEqual(t.setCdr("baz"), {car:"foo", cdr:"baz"}, "You can update just one key and stuff")
+  test.done()
+}
+
+const functor = persistentClass({ 
+  constructor (val) {return {val:val} },  
+  map(f) {return {val:f(this.val) }} 
+})
+
+exports.general = (test) => {
+  test.equal(functor(4).map((val)=> val + 1).val, 5)
   test.done()
 }
