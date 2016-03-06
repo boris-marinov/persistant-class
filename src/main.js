@@ -1,5 +1,14 @@
 Object.assign = Object.assign || require('assign')
 
+const prefix = '_super_'
+//Adds the prefix '_super_' to all object methods
+const superPrefix = (spec) => {
+  return Object.keys(spec).reduce((proto, key) => {
+    proto[ prefix + key] = spec[key]
+    return proto
+  }, {})
+}
+
 //Creates a constructor function from a 'spec' object, containing the methods
 const createConstructor = (spec) => {
 
@@ -13,12 +22,16 @@ const createConstructor = (spec) => {
       proto[key] = function (...args) {
         //Exec the method
         const result = method.apply(this, args)
-        //If the returned object contains all keys that the original object, wrap it and return it
-        if (typeof this === 'object' && Object.keys(result).length === Object.keys(this).length ) {
-          return baseConstructor(result)
+        if (result.constructor === Object) {
+          //If the returned object contains all keys that the original object, wrap it and return it
+          if (typeof this !== 'object') {
+            return baseConstructor(result)
+          } else {
+            //else merge the result with the original object
+            return baseConstructor(Object.assign({}, this, result))
+          }
         } else {
-          //else merge the result with the original object
-          return baseConstructor(Object.assign({}, this, result))
+          return result
         }
       }
       return proto
@@ -33,7 +46,7 @@ const createConstructor = (spec) => {
   //If the object has a constructor, use it, else use the base constructor
   const constructor = proto.hasOwnProperty("constructor") ? proto.constructor : baseConstructor
   //Add function for extending the object
-  constructor.extend = (newSpec) => createConstructor(Object.assign({}, spec, newSpec))
+  constructor.extend = (newSpec) => createConstructor(Object.assign(superPrefix(spec), spec, newSpec))
   return constructor
 }
 

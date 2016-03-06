@@ -4,6 +4,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 Object.assign = Object.assign || require('assign');
 
+var prefix = '_super_';
+//Adds the prefix '_super_' to all object methods
+var superPrefix = function superPrefix(spec) {
+  return Object.keys(spec).reduce(function (proto, key) {
+    proto[prefix + key] = spec[key];
+    return proto;
+  }, {});
+};
+
 //Creates a constructor function from a 'spec' object, containing the methods
 var createConstructor = function createConstructor(spec) {
 
@@ -21,12 +30,16 @@ var createConstructor = function createConstructor(spec) {
 
         //Exec the method
         var result = method.apply(this, args);
-        //If the returned object contains all keys that the original object, wrap it and return it
-        if (_typeof(this) === 'object' && Object.keys(result).length === Object.keys(this).length) {
-          return baseConstructor(result);
+        if (result.constructor === Object) {
+          //If the returned object contains all keys that the original object, wrap it and return it
+          if (_typeof(this) !== 'object') {
+            return baseConstructor(result);
+          } else {
+            //else merge the result with the original object
+            return baseConstructor(Object.assign({}, this, result));
+          }
         } else {
-          //else merge the result with the original object
-          return baseConstructor(Object.assign({}, this, result));
+          return result;
         }
       };
       return proto;
@@ -44,7 +57,7 @@ var createConstructor = function createConstructor(spec) {
   var constructor = proto.hasOwnProperty("constructor") ? proto.constructor : baseConstructor;
   //Add function for extending the object
   constructor.extend = function (newSpec) {
-    return createConstructor(Object.assign({}, spec, newSpec));
+    return createConstructor(Object.assign(superPrefix(spec), spec, newSpec));
   };
   return constructor;
 };

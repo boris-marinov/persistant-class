@@ -1,4 +1,4 @@
-const persistentClass = require('../dist/main')
+const persistentClass = require('../src/main')
 
 const Num = persistentClass({
   constructor(i) { return {i:i}},
