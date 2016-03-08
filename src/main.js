@@ -10,7 +10,7 @@ const superPrefix = (spec) => {
 }
 
 //Creates a constructor function from a 'spec' object, containing the methods
-const createConstructor = (spec) => {
+const createConstructor = (spec, outerProto) => {
 
   //A function which elevates the spec to a full-blown prototype
   const toPrototype = (obj) => {
@@ -22,18 +22,18 @@ const createConstructor = (spec) => {
       proto[key] = function (...args) {
         //Exec the method
         const result = method.apply(this, args)
-        if (Object.getPrototypeOf(result) === proto) {
-            return baseConstructor(Object.assign({}, this, result))
+        if (typeof result === 'object' && typeof this === 'object' && proto.isPrototypeOf(result)) {
+          return Object.assign(Object.create(Object.getPrototypeOf(this)), this, result)
         } else {
           return result
         }
       }
       return proto
-    }, {})
+    }, Object.create(outerProto))
   }
   
   //Transform the spec (do it once when the constructor is initialized
-  const proto = toPrototype(spec)
+  const proto = Object.assign(toPrototype(spec), superPrefix(outerProto))
 
   //Create the base constructor
   const baseConstructor = (val) => Object.assign(Object.create(proto), val)
@@ -41,9 +41,10 @@ const createConstructor = (spec) => {
   //const constructor = proto.hasOwnProperty("constructor") ? proto.constructor : baseConstructor
   const constructor = baseConstructor
   //Add function for extending the object
-  constructor.extend = (newSpec) => createConstructor(Object.assign(superPrefix(spec), spec, newSpec))
-  constructor.constructor = proto.constructor
+  constructor.extend = (newSpec) => createConstructor(newSpec, proto)
+  constructor.constructor = proto.constructor.bind(proto)
+  constructor.prototype = proto
   return constructor
 }
 
-module.exports = createConstructor({}).extend
+module.exports = (spec) => createConstructor(spec, {})

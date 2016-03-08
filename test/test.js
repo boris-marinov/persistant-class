@@ -1,23 +1,23 @@
 const persistentClass = require('../src/main')
 
 const Num = persistentClass({
-  constructor(i) { return {i:i}},
-  increment() {return {i:this.i + 1}}
+  constructor(i) { return Num({i:i})},
+  increment() {return Num({i:this.i + 1})}
 })
 
 const Tuple = persistentClass({
   setCar (val) {
-    return {car:val}
+    return Tuple({car:val})
   },
   setCdr (val) {
-    return {cdr:val}
+    return Tuple({cdr:val})
   }
 })
 
 
 exports.constructor = (test) => {
 
-  const obj = Num(1)
+  const obj = Num.constructor(1)
 
   test.equal(obj.i, 1, "Instantiate a value by passing a generic JSON object and stuff")
 
@@ -30,25 +30,25 @@ exports.extend = (test) => {
 
   ExtendedNum = Num.extend({decrement () {return {i:this.i - 1}}})
 
-  test.equal(ExtendedNum(1).decrement().i, 0, "Add methods at runtime and stuff")
+  test.equal(ExtendedNum.constructor(1).decrement().i, 0, "Add methods at runtime and stuff")
 
-  test.equal(Num(1).decrement, undefined, "The old constructor is not affected")
+  test.equal(Num.constructor(1).decrement, undefined, "The old constructor is not affected")
 
   test.done()
 }
 
 exports.extendConstructor = (test) => {
   NTuple = Tuple.extend({
-    constructor (car, cdr) { return {car, cdr} }
+    constructor (car, cdr) { return NTuple({car, cdr}) }
   })
 
-  test.equal(NTuple('foo','bar').car, 'foo', 'Constructor can be added upon extending')
+  test.equal(NTuple.constructor('foo','bar').car, 'foo', 'Constructor can be added upon extending')
 
   NumTuple = NTuple.extend({
-    setCar(car) { return {car: "car="+car}}
+    setCar(car) { return NumTuple({car: "car="+car})}
   })
 
-  test.equal(NumTuple(1, 2).setCar(1).car, "car=1")
+  test.equal(NumTuple.constructor(1, 2).setCar(1).car, "car=1")
 
   test.done()
 }
@@ -59,14 +59,14 @@ exports.defaultConstructor = (test) => {
 
 exports.fluent = (test) => {
 
-  test.equal(Num(1).increment().increment().i, 3, "Methods return a wrapped instance")
+  test.equal(Num.constructor(1).increment().increment().i, 3, "Methods return a wrapped instance")
 
   test.done()
 }
 
 exports.persistency  = (test) => {
 
-  const one = Num(1)
+  const one = Num.constructor(1)
 
   const two = one.increment()
 
@@ -81,12 +81,23 @@ exports.deltas = (test) => {
   test.done()
 }
 
-const functor = persistentClass({ 
-  constructor (val) {return {val:val} },  
-  map(f) {return {val:f(this.val) }} 
+const Functor = persistentClass({ 
+  constructor (val) {return Functor({val:val}) },  
+  map(f) {return Functor({val:f(this.val) })} 
 })
 
 exports.general = (test) => {
-  test.equal(functor(4).map((val)=> val + 1).val, 5)
+  test.equal(Functor.constructor(4).map((val)=> val + 1).val, 5)
+  test.done()
+
+}
+exports.instanceOf = (test) => {
+  const t = Tuple({car:"foo", cdr:"bar"})
+
+  test.equal(t instanceof Tuple, true)
+  const extendedTuple = Tuple.extend({})
+  const e = extendedTuple()
+
+  test.equal(e instanceof Tuple, true)
   test.done()
 }

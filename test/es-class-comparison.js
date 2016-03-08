@@ -22,11 +22,11 @@ const PersistentPoint = persistentClass({
     constructor(x, y) {
       return PersistentPoint({ x, y })
     },
-    moveX(x) {
-      return PersistentPoint({x: x + this.x})
+    moveX(amount) {
+      return PersistentPoint({x: amount + this.x})
     },
-    moveY(y) {
-      return PersistentPoint({y: y + this.y})
+    moveY(amount) {
+      return PersistentPoint({y: amount + this.y})
     },
     toString() {
         return '(' + this.x + ', ' + this.y + ')';
@@ -34,7 +34,6 @@ const PersistentPoint = persistentClass({
 })
 
 exports.base = (test) => {
-  debugger
   test.equal(new Point(1, 2).toString(), PersistentPoint.constructor(1, 2).toString())
   test.done()
 }
@@ -70,7 +69,7 @@ const PersistentColorPoint = PersistentPoint.extend({
 
 exports.extend = (test) => {
   
-  test.equal(PersistentColorPoint.constructor(1, 2, 'blue').moveX(1).toString(), '2, 2 in blue')
+  test.equal(PersistentColorPoint.constructor(1, 2, 'blue').moveX(1).toString(), '(2, 2) in blue')
   test.equal(new ColorPoint(1, 2, 'blue').toString(), PersistentColorPoint.constructor(1, 2, 'blue').toString())
   test.done()
 }
