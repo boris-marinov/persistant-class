@@ -22,14 +22,8 @@ const createConstructor = (spec) => {
       proto[key] = function (...args) {
         //Exec the method
         const result = method.apply(this, args)
-        if (result.constructor === Object) {
-          //If the returned object contains all keys that the original object, wrap it and return it
-          if (typeof this !== 'object') {
-            return baseConstructor(result)
-          } else {
-            //else merge the result with the original object
+        if (Object.getPrototypeOf(result) === proto) {
             return baseConstructor(Object.assign({}, this, result))
-          }
         } else {
           return result
         }
@@ -44,9 +38,11 @@ const createConstructor = (spec) => {
   //Create the base constructor
   const baseConstructor = (val) => Object.assign(Object.create(proto), val)
   //If the object has a constructor, use it, else use the base constructor
-  const constructor = proto.hasOwnProperty("constructor") ? proto.constructor : baseConstructor
+  //const constructor = proto.hasOwnProperty("constructor") ? proto.constructor : baseConstructor
+  const constructor = baseConstructor
   //Add function for extending the object
   constructor.extend = (newSpec) => createConstructor(Object.assign(superPrefix(spec), spec, newSpec))
+  constructor.constructor = proto.constructor
   return constructor
 }
 
