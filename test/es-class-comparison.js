@@ -1,4 +1,4 @@
-const persistentClass = require('../src/main')
+const persistent = require('../src/main')
 
 const Point = class {
     constructor(x, y) {
@@ -18,30 +18,29 @@ const Point = class {
     }
 }
 
-const PersistentPoint = persistentClass({
+const PersistentPoint = class extends persistent {
     constructor(x, y) {
-      return PersistentPoint({ x, y })
-    },
+      return super({x, y}) 
+    }
     moveX(x) {
-      return PersistentPoint({x: x + this.x})
-    },
+      return this.set({x: x + this.x})
+    }
     moveY(y) {
-      return PersistentPoint({y: y + this.y})
-    },
+      return this.set({y: y + this.y})
+    }
     toString() {
         return '(' + this.x + ', ' + this.y + ')';
     }
-})
+}
 
 exports.base = (test) => {
-  debugger
-  test.equal(new Point(1, 2).toString(), PersistentPoint.constructor(1, 2).toString())
+  test.equal(new Point(1, 2).toString(), new PersistentPoint(1, 2).toString())
   test.done()
 }
 
 exports.persistent = (test) => {
   const point = new Point(1, 2)
-  const persistentPoint = PersistentPoint.constructor(1, 2)
+  const persistentPoint = new PersistentPoint(1, 2)
   test.equal(point.moveX(1).toString(), persistentPoint.moveX(1).toString())
   test.equal(point.toString(), '(2, 2)')
   test.equal(persistentPoint.toString(), '(1, 2)')
@@ -59,19 +58,19 @@ const ColorPoint = class extends Point {
     }
 } 
 
-const PersistentColorPoint = PersistentPoint.extend({
+const PersistentColorPoint = class extends PersistentPoint{
     constructor(x, y, color) {
-        return PersistentColorPoint({ x, y, color })
-    },
-    toString() {
-        return this._super_toString() + ' in ' + this.color;
+        return super(x, y).set({color})
     }
-})
+    toString() {
+        return super.toString() + ' in ' + this.color;
+    }
+}
 
 exports.extend = (test) => {
   
-  test.equal(PersistentColorPoint.constructor(1, 2, 'blue').moveX(1).toString(), '2, 2 in blue')
-  test.equal(new ColorPoint(1, 2, 'blue').toString(), PersistentColorPoint.constructor(1, 2, 'blue').toString())
+  test.equal(new PersistentColorPoint(0, 2, 'blue').moveX(2).moveY(-1).toString(), '(2, 1) in blue')
+  test.equal(new ColorPoint(1, 2, 'blue').toString(), new PersistentColorPoint(1, 2, 'blue').toString())
   test.done()
 }
 
