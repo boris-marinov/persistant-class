@@ -1,16 +1,16 @@
-const persistent = require('../src/main')
+const {Persistent, create} = require('../src/main')
 
 const Point = class {
     constructor(x, y) {
         this.x = x;
         this.y = y;
     }
-    moveX(x) {
-      this.x = this.x + x;
+    moveX(amount) {
+      this.x = this.x + amount;
       return this
     }
-    moveY(y) {
-      this.y = this.y + y;
+    moveY(amount) {
+      this.y = this.y + amount;
       return this
     }
     toString() {
@@ -18,15 +18,15 @@ const Point = class {
     }
 }
 
-const PersistentPoint = class extends persistent {
+const PersistentPoint = class extends Persistent {
     constructor(x, y) {
       return super({x, y}) 
     }
-    moveX(x) {
-      return this.set({x: x + this.x})
+    moveX(amount) {
+      return this.set({x: amount + this.x})
     }
-    moveY(y) {
-      return this.set({y: y + this.y})
+    moveY(amount) {
+      return this.set({y: amount + this.y})
     }
     toString() {
         return '(' + this.x + ', ' + this.y + ')';
@@ -74,3 +74,21 @@ exports.extend = (test) => {
   test.done()
 }
 
+exports.prototype = (test) => {
+  const pPoint = create({
+    constructor(x, y) {
+      return this.set({x, y}) 
+    },
+    moveX(amount) {
+      return this.set({x: amount + this.x})
+    },
+    moveY(amount) {
+      return this.set({y: amount + this.y})
+    },
+    toString() {
+        return '(' + this.x + ', ' + this.y + ')';
+    }
+  })
+  test.equal(pPoint(1,2).moveX(1).toString(), '(2, 2)')
+  test.done()
+}

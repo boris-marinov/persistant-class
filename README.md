@@ -4,31 +4,42 @@ Persistent datastructures. Loosely based on the ES2015 class specification.
 
 ## About
 
-This is an opinionated tool for constructing lightweight persistent data structures. 
-A cross between the Records from ImmutableJS and the ECMAScript 6 Classes.
+This is an opinionated tool for constructing lightweight persistent data structures, 
+kinda like the Records from ImmutableJS, made using ECMAScript 6 Classes.
 
 You can define and extend them. What you get will always be immutable.
 
-      const point = new Point(1, 2)
-      const persistentPoint = new PersistentPoint(1, 2)
+## Example
 
-      point.moveX(1).toString() === persistentPoint.moveX(1).toString() //true
+Here is a little comparison between using a persistent class compared to a plain one:
 
-      point.toString() //'(2, 2)'
-      persistentPoint.toString() //'(1, 2)'
+    const point = new Point(1, 2)
+    
+    const persistentPoint = new PersistentPoint(1, 2)
 
+    persistentPoint.x = 3 // Does not mutate the object. Throws error in strict mode
 
-## Using the library
+    point.moveX(1).toString() === persistentPoint.moveX(1).toString() //Both implementation support fluent API
+
+    point.toString() //'(2, 2)' // The Value is mutated in the operation above
+
+    persistentPoint.toString() //'(1, 2)' // Values remain unchanged
+
+## Tutorial
 
 The library exports a Persistent Class Constructor:
 
-    const persistentClass = require('persistent-class')
+    const Persistent = require('persistent-class').Persistent
 
-### Defining a class
+Define a persistent class by extending it:
 
-Define a persistent class by creating a constructor function which returns a plain object with the class's properties:
+    const PersistentPoint = class extends Persistent {
 
-#### ES6 API:
+### Addding a constructor
+
+Create a constructor for your persistent class by calling the super function with a plain object containing the object's properties and returning the result:
+
+#### Plain:
 
     const Point = class {
         constructor(x, y) {
@@ -37,82 +48,72 @@ Define a persistent class by creating a constructor function which returns a pla
         }
         ...
 
-#### Persistent API:
+#### Persistent:
 
-    const PersistentPoint = persistentClass({
+    const PersistentPoint = class extends Persistent {
         constructor(x, y) {
-          return { x, y }
-        },
+          return super({x, y}) 
+        }
         ...
 
 ### Defining methods
 
-Methods can apply modifications to the object's properties by returning a modification object containing the new values
-of changed properties. The API is fluent by default so you don't need to return `this` explicitly:
+Methods can apply modifications to the object's properties by calling the low level `set` method with a modification object containing the new values of changed properties. This method generates a new version of the object. Return the result to create a fluent API.
         
-#### ES6 API:
+#### Plain:
 
-        moveX(x) {
-          this.x = this.x + x;
+        moveX(amount) {
+          this.x = this.x + amount;
           return this
         }
-        moveY(y) {
-          this.y = this.y + y;
+        moveY(amount) {
+          this.y = this.y + amount;
           return this
         }
-
-#### Persistent API:
-
-        moveX(x) {
-          return {x: x + this.x}
-        },
-        moveY(y) {
-          return {y: y + this.y}
-        },
-
-Methods that do not return a plain object are threated the same:
-
-#### ES6 API:
-
         toString() {
             return '(' + this.x + ', ' + this.y + ')';
         }
     })
-    
-#### Persistent API:
 
+#### Persistent:
+
+        moveX(amount) {
+          return this.set({x: amount + this.x})
+        }
+        moveY(amount) {
+          return this.set({y: amount + this.y})
+        }
         toString() {
             return '(' + this.x + ', ' + this.y + ')';
         }
     }
 
-### Inheritance
+### Using Custom factory Functions
 
-Inheritance for Persistent Classes works in much the same way as in ES6 Classes.
-Calling `super` methods is supported via a prefix:
+You can create persistent objects with vanilla prototype-based inheritance.
+Just create your object using the provided `prototype` or use the `create` function to create a class-like record structure.
 
-        
-#### ES6 API:
+    const create = require('persistent-class').create
 
-    const ColorPoint = class extends Point {
-        constructor(x, y, color) {
-            super(x, y);
-            this.color = color;
-        }
-        toString() {
-            return super.toString() + ' in ' + this.color;
-        }
-    } 
-
-#### Persistent API:
-
-    const PersistentColorPoint = PersistentPoint.extend({
-        constructor(x, y, color) {
-            return { x, y, color }
-        },
-        toString() {
-            return this._super_toString() + ' in ' + this.color;
-        }
+    const pPoint = create({
+      constructor(x, y) {
+        return this.set({x, y}) 
+      },
+      moveX(amount) {
+        return this.set({x: amount + this.x})
+      },
+      moveY(amount) {
+        return this.set({y: amount + this.y})
+      },
+      toString() {
+          return '(' + this.x + ', ' + this.y + ')';
+      }
     })
 
 [View source](test/es-class-comparison.js)
+
+##Project Status
+
+It is just [a few lines of code](src/main.js) and is [well](test/test.js)-[tested](test/es-class-comparison.js).
+
+

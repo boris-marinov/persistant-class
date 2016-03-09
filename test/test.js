@@ -1,23 +1,23 @@
-const persistentClass = require('../src/main')
+const {Persistent} = require('../src/main')
 
-const Num = persistentClass({
-  constructor(i) { return {i:i}},
-  increment() {return {i:this.i + 1}}
-})
+const Num = class extends Persistent {
+  constructor(i) { return super({i:i})}
+  increment() {return this.set({i:this.i + 1})}
+}
 
-const Tuple = persistentClass({
+const Tuple = class extends Persistent {
   setCar (val) {
-    return {car:val}
-  },
-  setCdr (val) {
-    return {cdr:val}
+    return this.set({car:val})
   }
-})
+  setCdr (val) {
+    return this.set({cdr:val})
+  }
+}
 
 
 exports.constructor = (test) => {
 
-  const obj = Num(1)
+  const obj = new Num(1)
 
   test.equal(obj.i, 1, "Instantiate a value by passing a generic JSON object and stuff")
 
@@ -28,45 +28,45 @@ exports.constructor = (test) => {
 
 exports.extend = (test) => {
 
-  ExtendedNum = Num.extend({decrement () {return {i:this.i - 1}}})
+  const ExtendedNum = class extends Num {decrement () {return this.set({i:this.i - 1})}}
 
-  test.equal(ExtendedNum(1).decrement().i, 0, "Add methods at runtime and stuff")
+  test.equal(new ExtendedNum(1).decrement().i, 0, "Add methods at runtime and stuff")
 
-  test.equal(Num(1).decrement, undefined, "The old constructor is not affected")
+  test.equal(new Num(1).decrement, undefined, "The old constructor is not affected")
 
   test.done()
 }
 
 exports.extendConstructor = (test) => {
-  NTuple = Tuple.extend({
-    constructor (car, cdr) { return {car, cdr} }
-  })
+  NTuple = class extends Tuple{
+    constructor (car, cdr) { return super({car, cdr}) }
+  }
 
-  test.equal(NTuple('foo','bar').car, 'foo', 'Constructor can be added upon extending')
+  test.equal(new NTuple('foo','bar').car, 'foo', 'Constructor can be added upon extending')
 
-  NumTuple = NTuple.extend({
-    setCar(car) { return {car: "car="+car}}
-  })
+  NumTuple = class extends NTuple {
+    setCar(car) { return this.set({car: "car="+car})}
+  }
 
-  test.equal(NumTuple(1, 2).setCar(1).car, "car=1")
+  test.equal(new NumTuple(1, 2).setCar(1).car, "car=1")
 
   test.done()
 }
 exports.defaultConstructor = (test) => {
-  test.equal(Tuple({car:'foo', cdr:'bar'}).setCar(1).car, 1)
+  test.equal(new Tuple({car:'foo', cdr:'bar'}).setCar(1).car, 1)
   test.done()
 }
 
 exports.fluent = (test) => {
 
-  test.equal(Num(1).increment().increment().i, 3, "Methods return a wrapped instance")
+  test.equal(new Num(1).increment().increment().i, 3, "Methods return a wrapped instance")
 
   test.done()
 }
 
 exports.persistency  = (test) => {
 
-  const one = Num(1)
+  const one = new Num(1)
 
   const two = one.increment()
 
@@ -76,17 +76,17 @@ exports.persistency  = (test) => {
 }
 
 exports.deltas = (test) => {
-  const t = Tuple({car:"foo", cdr:"bar"})
+  const t = new Tuple({car:"foo", cdr:"bar"})
   test.deepEqual(t.setCdr("baz"), {car:"foo", cdr:"baz"}, "You can update just one key and stuff")
   test.done()
 }
 
-const functor = persistentClass({ 
-  constructor (val) {return {val:val} },  
-  map(f) {return {val:f(this.val) }} 
-})
+const Functor = class extends Persistent { 
+  constructor (val) {return super({val:val}) }
+  map(f) {return this.set({val:f(this.val)})} 
+}
 
 exports.general = (test) => {
-  test.equal(functor(4).map((val)=> val + 1).val, 5)
+  test.equal(new Functor(4).map((val)=> val + 1).val, 5)
   test.done()
 }
